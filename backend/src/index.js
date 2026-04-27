@@ -13,12 +13,14 @@ dotenv.config();
 const app = express();
 
 // Middleware
+app.use("/api/payment", webhookRoute);
 app.use(cors());
 app.use(express.json());
 
 // Routes
 app.use("/api/user", userRoutes);
 app.use("/api/room", roomRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // Connect DB
 connectDB();
@@ -34,6 +36,7 @@ const io = new Server(server, {
 
 const roomUsers = {};
 const roomState = {};
+const roomQueue = {};
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
@@ -102,6 +105,69 @@ io.on("connection", (socket) => {
     roomState[roomCode].currentTime = time;
 
     socket.to(roomCode).emit("seek", { time });
+  });
+
+  socket.on("add_to_queue", ({ roomCode, video }) => {
+    if (!roomQueue[roomCode]) {
+      roomQueue[roomCode] = [];
+    }
+
+    roomQueue[roomCode].push(video);
+
+    io.to(roomCode).emit("queue_updated", roomQueue[roomCode]);
+  });
+
+  socket.on("play_from_queue", ({ roomCode, video }) => {
+    if (!roomQueue[roomCode]) return;
+
+    // remove from queue
+    roomQueue[roomCode] = roomQueue[roomCode].filter(
+      (v) => v.videoId !== video.videoId
+    );
+
+    // update state
+    roomState[roomCode] = {
+      videoId: video.videoId,
+      currentTime: 0,
+      isPlaying: true,
+    };
+
+    // sync queue
+    io.to(roomCode).emit("queue_updated", roomQueue[roomCode]);
+
+    // sync playback
+    io.to(roomCode).emit("sync_state", roomState[roomCode]);
+  });
+
+  socket.on("song_ended", ({ roomCode }) => {
+    console.log("SONG ENDED EVENT RECEIVED:", roomCode);
+
+    if (!roomQueue[roomCode] || roomQueue[roomCode].length === 0) {
+      console.log("Queue empty");
+      return;
+    }
+
+    const nextVideo = roomQueue[roomCode].shift();
+
+    console.log("NEXT VIDEO:", nextVideo);
+
+    roomState[roomCode] = {
+      videoId: nextVideo.videoId,
+      currentTime: 0,
+      isPlaying: true,
+    };
+
+    io.to(roomCode).emit("queue_updated", roomQueue[roomCode]);
+    io.to(roomCode).emit("sync_state", roomState[roomCode]);
+  });
+
+  socket.on("send_message", ({ roomCode, message }) => {
+    const payload = {
+      ...message,
+      timestamp: new Date().toISOString(),
+    };
+
+    io.to(roomCode).emit("receive_message", payload);
   });
 });
 
