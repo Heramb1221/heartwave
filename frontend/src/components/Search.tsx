@@ -5,7 +5,11 @@ import { Search as SearchIcon, Loader2 } from "lucide-react";
 
 interface YouTubeVideo {
   id: { videoId: string };
-  snippet: { title: string; channelTitle: string; thumbnails: { default: { url: string } } };
+  snippet: {
+    title: string;
+    channelTitle: string;
+    thumbnails: { default: { url: string } };
+  };
 }
 
 export const Search = () => {
@@ -21,41 +25,70 @@ export const Search = () => {
     setSearching(true);
     timeoutRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=6&key=${import.meta.env.VITE_YOUTUBE_API_KEY}`);
+        const res = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=6&key=${import.meta.env.VITE_YOUTUBE_API_KEY}`
+        );
         const data = await res.json();
         setResults(data.items || []);
-      } catch (err) { console.error("Search error:", err); }
-      finally { setSearching(false); }
+      } catch (err) {
+        console.error("Search error:", err);
+      } finally {
+        setSearching(false);
+      }
     }, 350);
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
   }, [query]);
 
   const addToQueue = (video: YouTubeVideo) => {
     if (!currentRoom) return;
-    socket.emit("add_to_queue", { roomCode: currentRoom, video: { videoId: video.id.videoId, title: video.snippet.title, thumbnail: video.snippet.thumbnails.default.url } });
-    setQuery(""); setResults([]);
+    socket.emit("add_to_queue", {
+      roomCode: currentRoom,
+      video: {
+        videoId: video.id.videoId,
+        title: video.snippet.title,
+        thumbnail: video.snippet.thumbnails.default.url,
+      },
+    });
+    setQuery("");
+    setResults([]);
   };
 
   if (!currentRoom) return null;
 
   return (
-    <div className="sidebar-search">
-      <div className="search-box">
-        <span className="search-icon">
-          {searching ? <Loader2 size={14} className="animate-spin" /> : <SearchIcon size={14} />}
+    <div className="sidebar-search-wrap">
+      <div className="search-field">
+        <span className="search-icon-wrap">
+          {searching
+            ? <Loader2 size={14} style={{ animation: "spin 0.8s linear infinite" }} />
+            : <SearchIcon size={14} />
+          }
         </span>
-        <input placeholder="Search songs, artists…" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <input
+          placeholder="Search songs, artists…"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+        />
       </div>
+
       {results.length > 0 && (
         <div className="search-results">
-          {results.map((v) => (
-            <div key={v.id.videoId} className="search-item" onClick={() => addToQueue(v)}>
-              <img className="search-thumb" src={v.snippet.thumbnails.default.url} alt="" />
+          {results.map(v => (
+            <div
+              key={v.id.videoId}
+              className="search-result-item"
+              onClick={() => addToQueue(v)}
+            >
+              <img
+                className="search-thumb"
+                src={v.snippet.thumbnails.default.url}
+                alt=""
+              />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="search-title">{v.snippet.title}</div>
-                <div className="search-sub">{v.snippet.channelTitle}</div>
+                <div className="search-result-title">{v.snippet.title}</div>
+                <div className="search-result-channel">{v.snippet.channelTitle}</div>
               </div>
-              <div className="btn-add">+ Add</div>
+              <div className="search-add-btn">+ Add</div>
             </div>
           ))}
         </div>

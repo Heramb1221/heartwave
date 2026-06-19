@@ -50,136 +50,184 @@ export const UpgradeModal = ({ onClose }: UpgradeModalProps) => {
   };
 
   return (
-    /* Backdrop */
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in"
-      style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)" }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 200,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 16,
+        background: "rgba(0,0,0,0.75)",
+        backdropFilter: "blur(8px)",
+        animation: "fade-in 0.25s var(--ease) both",
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      {/* Modal Card */}
       <div
-        className="relative w-full max-w-md animate-scale-in"
         style={{
-          background: "rgba(20,20,20,0.95)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: 24,
-          backdropFilter: "blur(24px)",
-          boxShadow: "0 32px 80px rgba(0,0,0,0.6), 0 0 60px rgba(157,78,221,0.08)",
+          width: "100%", maxWidth: 440, position: "relative",
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border)",
+          borderRadius: "var(--r-2xl)",
+          boxShadow: "0 32px 80px rgba(0,0,0,0.6), var(--shadow-violet)",
+          animation: "scale-in 0.3s var(--ease) both",
+          overflow: "hidden",
         }}
       >
-        {/* Gradient accent top bar */}
-        <div className="h-1 w-full rounded-t-3xl" style={{ background: "linear-gradient(90deg, #FF3B3B, #9D4EDD, #FF6EC7)" }} />
+        {/* Top accent line */}
+        <div style={{
+          height: 2,
+          background: "linear-gradient(90deg, var(--violet), var(--coral), var(--violet-soft))",
+        }} />
 
-        <div className="p-7">
-          {/* Close button */}
+        <div style={{ padding: 28 }}>
+          {/* Close */}
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 p-1.5 rounded-lg transition-colors duration-200"
-            style={{ color: "var(--text-secondary)", background: "rgba(255,255,255,0.05)" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "white"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)"; }}
+            style={{
+              position: "absolute", top: 16, right: 16,
+              width: 32, height: 32, borderRadius: "var(--r-sm)",
+              background: "var(--bg-input)", border: "1px solid var(--border)",
+              color: "var(--text-secondary)", display: "flex",
+              alignItems: "center", justifyContent: "center",
+              cursor: "pointer", transition: "all var(--t-base)",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
 
           {step === "plan" ? (
             <>
               {/* Header */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FF3B3B, #9D4EDD)" }}>
-                  <Crown size={20} className="text-white" />
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: "var(--r-md)",
+                  background: "linear-gradient(135deg, var(--violet), var(--coral))",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 4px 16px rgba(108,63,255,0.3)",
+                }}>
+                  <Crown size={20} color="#fff" />
                 </div>
                 <div>
-                  <h2 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.35rem", color: "var(--text-primary)" }}>
-                    Go Premium
-                  </h2>
-                  <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>Unlock the full HeartWave experience</p>
+                  <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.3rem" }}>Go Premium</div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>Unlock the full Melodies experience</div>
                 </div>
               </div>
 
               {/* Price */}
-              <div className="text-center py-5 px-4 mb-5 rounded-2xl" style={{ background: "rgba(255,59,59,0.06)", border: "1px solid rgba(255,59,59,0.15)" }}>
-                <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "3rem", color: "var(--text-primary)", lineHeight: 1 }}>
+              <div style={{
+                textAlign: "center", padding: "20px 16px", marginBottom: 20,
+                background: "var(--violet-dim)", border: "1px solid var(--border-accent)",
+                borderRadius: "var(--r-lg)",
+              }}>
+                <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "3rem", lineHeight: 1 }}>
                   $9.99
                   <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-secondary)" }}>/mo</span>
                 </div>
-                <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginTop: 6 }}>Cancel anytime · No hidden fees</p>
+                <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: 6 }}>
+                  Cancel anytime · No hidden fees
+                </div>
               </div>
 
               {/* Features */}
-              <div className="space-y-2.5 mb-6">
-                {FEATURES.map((feature) => (
-                  <div key={feature} className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,59,59,0.15)" }}>
-                      <Check size={12} style={{ color: "var(--primary-500)" }} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
+                {FEATURES.map(f => (
+                  <div key={f} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{
+                      width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
+                      background: "var(--coral-dim)", display: "flex",
+                      alignItems: "center", justifyContent: "center",
+                    }}>
+                      <Check size={11} color="var(--coral)" />
                     </div>
-                    <span style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>{feature}</span>
+                    <span style={{ fontSize: "0.84rem", color: "var(--text-secondary)" }}>{f}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Action buttons */}
               <button
+                className="btn btn-violet"
+                style={{ width: "100%", padding: "13px", justifyContent: "center", borderRadius: "var(--r-lg)", fontSize: "0.9rem" }}
                 onClick={() => setStep("confirm")}
-                className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200"
-                style={{ background: "linear-gradient(135deg, #FF3B3B, #9D4EDD)", color: "white", boxShadow: "0 4px 20px rgba(255,59,59,0.3)" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 28px rgba(255,59,59,0.45)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = ""; (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px rgba(255,59,59,0.3)"; }}
               >
                 <Zap size={16} /> Continue to Upgrade
               </button>
               <button
                 onClick={onClose}
-                className="w-full py-3 rounded-xl text-sm font-medium mt-2 transition-colors duration-200"
-                style={{ color: "var(--text-secondary)", background: "transparent" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "white"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)"; }}
+                style={{
+                  width: "100%", padding: "12px", marginTop: 8,
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "var(--text-muted)", fontSize: "0.84rem",
+                  transition: "color var(--t-base)",
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
               >
                 Maybe later
               </button>
             </>
           ) : (
             <>
-              {/* Confirm step */}
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4" style={{ background: "linear-gradient(135deg, rgba(255,59,59,0.2), rgba(157,78,221,0.2))", border: "1px solid rgba(255,59,59,0.2)" }}>
-                  <Shield size={28} style={{ color: "var(--primary-500)" }} />
+              {/* Confirm */}
+              <div style={{ textAlign: "center", marginBottom: 24 }}>
+                <div style={{
+                  width: 60, height: 60, margin: "0 auto 16px",
+                  borderRadius: "var(--r-lg)",
+                  background: "var(--violet-dim)", border: "1px solid var(--border-accent)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <Shield size={26} color="var(--violet-soft)" />
                 </div>
-                <h2 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.35rem", color: "var(--text-primary)", marginBottom: 8 }}>
+                <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1.25rem", marginBottom: 10 }}>
                   Ready to upgrade?
-                </h2>
-                <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.65 }}>
-                  You'll be taken to our secure Stripe checkout. Your subscription starts at <strong style={{ color: "var(--text-primary)" }}>$9.99/month</strong>.
+                </div>
+                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", lineHeight: 1.65 }}>
+                  You'll be taken to our secure Stripe checkout.
+                  Subscription starts at <strong style={{ color: "var(--text-primary)" }}>$9.99/month</strong>.
                 </p>
               </div>
 
-              <div className="space-y-2.5 mb-6 p-4 rounded-xl" style={{ background: "rgba(31,31,31,0.6)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                {["Secure payment via Stripe", "30-day money-back guarantee", "Cancel anytime from your account"].map((item) => (
-                  <div key={item} className="flex items-center gap-2.5">
-                    <Check size={14} style={{ color: "var(--primary-500)", flexShrink: 0 }} />
+              <div style={{
+                padding: 16, borderRadius: "var(--r-lg)", marginBottom: 24,
+                background: "var(--bg-elevated)", border: "1px solid var(--border)",
+              }}>
+                {["Secure payment via Stripe", "30-day money-back guarantee", "Cancel anytime from your account"].map(item => (
+                  <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <Check size={13} color="var(--coral)" style={{ flexShrink: 0 }} />
                     <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>{item}</span>
                   </div>
                 ))}
               </div>
 
               <button
+                className="btn btn-primary"
+                style={{ width: "100%", padding: "13px", justifyContent: "center", borderRadius: "var(--r-lg)", fontSize: "0.9rem" }}
                 onClick={handleUpgrade}
                 disabled={isLoading}
-                className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200"
-                style={{ background: "linear-gradient(135deg, #FF3B3B, #9D4EDD)", color: "white", boxShadow: "0 4px 20px rgba(255,59,59,0.3)" }}
               >
                 {isLoading ? (
-                  <><span className="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> Processing...</>
+                  <>
+                    <span style={{
+                      width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)",
+                      borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite",
+                      flexShrink: 0,
+                    }} />
+                    Processing…
+                  </>
                 ) : (
                   <><ArrowRight size={16} /> Proceed to Payment</>
                 )}
               </button>
               <button
                 onClick={() => setStep("plan")}
-                className="w-full py-3 rounded-xl text-sm font-medium mt-2 transition-colors duration-200"
-                style={{ color: "var(--text-secondary)", background: "transparent" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "white"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)"; }}
+                style={{
+                  width: "100%", padding: "12px", marginTop: 8,
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "var(--text-muted)", fontSize: "0.84rem",
+                  transition: "color var(--t-base)",
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
               >
                 ← Back
               </button>

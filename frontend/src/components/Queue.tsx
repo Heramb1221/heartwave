@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { socket } from "../socket";
 import { useQueueStore, useRoomStore, usePlayerStore } from "../store";
-import { Music2 } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import type { QueueVideo } from "../store";
 
@@ -22,28 +21,29 @@ export const Queue = () => {
     if (!currentRoom || !isHost) return;
     socket.emit("play_from_queue", { roomCode: currentRoom, videoId, userId: hostId });
   };
+
   const removeFromQueue = (videoId: string) => {
     if (!currentRoom) return;
-    setQueue(queue.filter((v) => v.videoId !== videoId));
+    setQueue(queue.filter(v => v.videoId !== videoId));
   };
 
   return (
     <div className="sidebar-queue">
-      <div className="section-header">
-        <div className="section-title">Queue</div>
-        <div className="section-count">{queue.length} songs</div>
+      <div className="sidebar-section-header">
+        <div className="sidebar-section-title">Up Next</div>
+        <div className="sidebar-section-count">{queue.length}</div>
       </div>
 
       {queue.length === 0 ? (
         <div className="empty-state">
-          <Music2 size={28} className="empty-icon" />
-          <div className="empty-text">Queue is empty — search to add songs</div>
+          <div className="empty-state-icon">🎵</div>
+          <div className="empty-state-text">Queue is empty<br />Search above to add songs</div>
         </div>
       ) : (
-        queue.map((video) => {
+        queue.map(video => {
           const active = video.videoId === currentVideoId;
           return (
-            <div key={video.videoId} className={`queue-item ${active ? "active" : ""}`}>
+            <div key={video.videoId} className={`queue-item${active ? " active" : ""}`}>
               {video.thumbnail ? (
                 <img className="queue-thumb" src={video.thumbnail} alt="" />
               ) : (
@@ -51,13 +51,21 @@ export const Queue = () => {
               )}
               <div className="queue-info">
                 <div className="queue-title">{video.title}</div>
-                <div className="queue-addedby">Added by user</div>
+                <div className="queue-by">{active ? "Now playing" : "In queue"}</div>
               </div>
               <div className="queue-actions">
                 {isHost && !active && (
-                  <div className="q-act" onClick={() => playFromQueue(video.videoId)} title="Play now (host)">▶</div>
+                  <div
+                    className="q-btn"
+                    onClick={() => playFromQueue(video.videoId)}
+                    title="Play now"
+                  >▶</div>
                 )}
-                <div className="q-act danger" onClick={() => removeFromQueue(video.videoId)} title="Remove">✕</div>
+                <div
+                  className="q-btn q-btn-danger"
+                  onClick={() => removeFromQueue(video.videoId)}
+                  title="Remove"
+                >✕</div>
               </div>
             </div>
           );

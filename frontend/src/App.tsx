@@ -9,48 +9,34 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
+        {/* Public */}
         <Route path="/" element={<Home />} />
 
-        {/* Protected Routes */}
+        {/* Protected */}
         <Route
           path="/dashboard"
           element={
             <>
-              <SignedIn>
-                <Dashboard />
-              </SignedIn>
-              <SignedOut>
-                <RedirectToSignIn />
-              </SignedOut>
+              <SignedIn><Dashboard /></SignedIn>
+              <SignedOut><RedirectToSignIn /></SignedOut>
             </>
           }
         />
-
         <Route
           path="/upgrade"
           element={
             <>
-              <SignedIn>
-                <Upgrade />
-              </SignedIn>
-              <SignedOut>
-                <RedirectToSignIn />
-              </SignedOut>
+              <SignedIn><Upgrade /></SignedIn>
+              <SignedOut><RedirectToSignIn /></SignedOut>
             </>
           }
         />
-
         <Route
           path="/success"
           element={
             <>
-              <SignedIn>
-                <Success />
-              </SignedIn>
-              <SignedOut>
-                <RedirectToSignIn />
-              </SignedOut>
+              <SignedIn><Success /></SignedIn>
+              <SignedOut><RedirectToSignIn /></SignedOut>
             </>
           }
         />

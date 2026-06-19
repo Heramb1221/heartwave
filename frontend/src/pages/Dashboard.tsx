@@ -44,26 +44,49 @@ const Dashboard = () => {
       }
     };
     fetchUser();
-  }, [getToken, setUserData, navigate]);
+  }, [getToken, setUserData]);
 
-  // ── Socket ──
-  useEffect(() => { socket.connect(); return () => { socket.disconnect(); }; }, []);
+  // ── Socket lifecycle ──
+  useEffect(() => {
+    socket.connect();
+    return () => { socket.disconnect(); };
+  }, []);
+
   useEffect(() => {
     socket.on("room_users", setUsers);
-    socket.on("error", (error) => { console.error("Socket error:", error); alert(error.message); });
-    return () => { socket.off("room_users"); socket.off("error"); };
+    socket.on("error", (error) => {
+      console.error("Socket error:", error);
+      alert(error.message);
+    });
+    return () => {
+      socket.off("room_users");
+      socket.off("error");
+    };
   }, [setUsers]);
 
   // ── Create room ──
   const createRoom = async () => {
     try {
       const token = await getToken();
-      const res = await fetch(`${API_BASE}/api/room/create`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_BASE}/api/room/create`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
       setCurrentRoom(data.roomCode);
       setHostId(user?.id);
-      socket.emit("join_room", { roomCode: data.roomCode, user: { clerkId: user?.id, name: user?.firstName || "Anonymous", avatar: user?.imageUrl } });
-    } catch (error) { console.error("Create room error:", error); alert("Failed to create room"); }
+      socket.emit("join_room", {
+        roomCode: data.roomCode,
+        user: {
+          clerkId: user?.id,
+          name: user?.firstName || "Anonymous",
+          avatar: user?.imageUrl,
+        },
+      });
+    } catch (error) {
+      console.error("Create room error:", error);
+      alert("Failed to create room");
+    }
   };
 
   // ── Join room ──
@@ -71,70 +94,104 @@ const Dashboard = () => {
     if (!roomCode.trim()) { alert("Enter a room code"); return; }
     try {
       const token = await getToken();
-      const res = await fetch(`${API_BASE}/api/room/join`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ roomCode }) });
+      const res = await fetch(`${API_BASE}/api/room/join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ roomCode }),
+      });
       const data = await res.json();
       if (!data.roomCode) { alert("Room not found"); return; }
       setCurrentRoom(data.roomCode);
       setHostId(data.hostId);
-      socket.emit("join_room", { roomCode: data.roomCode, user: { clerkId: user?.id, name: user?.firstName || "Anonymous", avatar: user?.imageUrl } });
+      socket.emit("join_room", {
+        roomCode: data.roomCode,
+        user: {
+          clerkId: user?.id,
+          name: user?.firstName || "Anonymous",
+          avatar: user?.imageUrl,
+        },
+      });
       setRoomCode("");
-    } catch (error) { console.error("Join room error:", error); alert("Failed to join room"); }
+    } catch (error) {
+      console.error("Join room error:", error);
+      alert("Failed to join room");
+    }
   };
 
   // ── Leave room ──
-  const handleLeaveRoom = () => { socket.emit("leave_room", { roomCode: currentRoom }); setCurrentRoom(null); };
+  const handleLeaveRoom = () => {
+    socket.emit("leave_room", { roomCode: currentRoom });
+    setCurrentRoom(null);
+  };
 
   // ── Copy code ──
-  const handleCopyRoomCode = () => { if (!currentRoom) return; navigator.clipboard.writeText(currentRoom); setCopyToast(true); setTimeout(() => setCopyToast(false), 2000); };
+  const handleCopyCode = () => {
+    if (!currentRoom) return;
+    navigator.clipboard.writeText(currentRoom);
+    setCopyToast(true);
+    setTimeout(() => setCopyToast(false), 2200);
+  };
 
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="dash-loading" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--bg-base)" }}>
-        <div className="logo-icon" style={{ fontSize: "2rem", marginBottom: 16 }}>🎧</div>
-        <p style={{ color: "var(--text-secondary)" }}>Loading HeartWave…</p>
+      <div className="dash-loading">
+        <div className="dash-loading-icon">🎧</div>
+        <p>Loading Melodies…</p>
       </div>
     );
   }
 
-  // ── No room → Lobby ──
+  // ── Lobby (no room) ──
   if (!currentRoom) {
     return (
       <>
         {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
+
         {/* Navbar */}
-        <nav className="navbar">
-          <div className="nav-left">
-            <div className="logo" onClick={() => navigate("/")}>
-              <div className="logo-icon">🎧</div>
-              <div className="logo-text">Heart<span>Wave</span></div>
+        <nav className="dash-nav" style={{ position: "sticky", top: 0 }}>
+          <div className="dash-nav-left">
+            <div className="nav-logo" onClick={() => navigate("/")}>
+              <div className="nav-logo-icon">🎧</div>
+              Melodies
             </div>
           </div>
-          <div className="nav-right">
+          <div className="dash-nav-right">
             {userData && !userData.isPremium && (
-              <button className="btn btn-primary" onClick={() => setShowUpgradeModal(true)}>
-                <span>⭐</span> Upgrade
+              <button className="btn btn-primary btn-sm" onClick={() => setShowUpgradeModal(true)}>
+                ⭐ Upgrade
               </button>
             )}
             {userData?.isPremium && (
-              <div className="btn" style={{ background: "rgba(250,204,21,.08)", borderColor: "rgba(250,204,21,.18)", color: "#facc15", cursor: "default" }}>
-                <span>⭐</span> Premium
-              </div>
+              <span className="badge badge-premium">⭐ Premium</span>
             )}
-            <div className="avatar" style={{ background: "transparent" }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
               <UserButton />
             </div>
           </div>
         </nav>
+
         {/* Lobby */}
-        <div className="dash-lobby">
-          <div className="dash-lobby-card">
-            <h2>Start Listening Together</h2>
-            <p>Create a room and invite friends, or join an existing one with a code.</p>
-            <button className="lobby-btn-create" onClick={createRoom}>🎵 Create Room</button>
+        <div className="dash-lobby" style={{ height: "calc(100vh - 64px)" }}>
+          <div className="lobby-card">
+            <div className="lobby-icon">🎵</div>
+            <div className="lobby-title">Start Listening Together</div>
+            <div className="lobby-desc">
+              Create a room and invite friends, or join an existing one with a six-character code.
+            </div>
+            <button className="lobby-create-btn" onClick={createRoom}>
+              ▶ &nbsp; Create Room
+            </button>
             <div className="lobby-join-row">
-              <input className="lobby-join-input" placeholder="Enter room code…" value={roomCode} onChange={(e) => setRoomCode(e.target.value)} onKeyDown={(e) => e.key === "Enter" && joinRoom()} />
-              <button className="lobby-btn-join" onClick={joinRoom}>Join</button>
+              <input
+                className="lobby-join-input"
+                placeholder="Enter room code…"
+                value={roomCode}
+                onChange={e => setRoomCode(e.target.value.toUpperCase())}
+                onKeyDown={e => e.key === "Enter" && joinRoom()}
+                maxLength={6}
+              />
+              <button className="lobby-join-btn" onClick={joinRoom}>Join</button>
             </div>
           </div>
         </div>
@@ -146,85 +203,89 @@ const Dashboard = () => {
   return (
     <>
       {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
-      
+
+      {/* Toast */}
       {copyToast && (
-        <div className="toast-container">
-          <div className="toast">
-            <div className="toast-dot"></div>
+        <div className="toast-stack">
+          <div className="toast-item">
+            <div className="toast-dot-green" />
             <span style={{ color: "var(--text-secondary)" }}>
-              <strong style={{ color: "var(--text-primary)" }}>Room code</strong> copied!
+              <strong style={{ color: "var(--text-primary)" }}>Room code</strong> copied to clipboard
             </span>
           </div>
         </div>
       )}
 
-      {/* ── NAVBAR ── */}
-      <nav className="navbar">
-        <div className="nav-left">
-          <div className="logo" onClick={() => navigate("/")}>
-            <div className="logo-icon">🎧</div>
-            <div className="logo-text">Heart<span>Wave</span></div>
+      <div className="dash-root">
+        {/* NAVBAR */}
+        <nav className="dash-nav">
+          <div className="dash-nav-left">
+            <div className="nav-logo" onClick={() => navigate("/")}>
+              <div className="nav-logo-icon">🎧</div>
+              Melodies
+            </div>
+            <div className="room-chip" onClick={handleCopyCode} title="Click to copy">
+              🔗 &nbsp;HW-{currentRoom}
+            </div>
           </div>
-          <div className="room-code" onClick={handleCopyRoomCode} title="Click to copy">
-            ROOM · HW-{currentRoom}
+
+          <div className="dash-nav-center">
+            <input
+              className="room-name-input"
+              defaultValue="Jam Session"
+              onBlur={e => { if (!e.target.value.trim()) e.target.value = "Jam Session"; }}
+            />
+            <span className="nav-edit-icon">✎</span>
           </div>
-        </div>
 
-        <div className="nav-center">
-          <input className="room-name" defaultValue="Jam Session" onBlur={(e) => { if (!e.target.value.trim()) e.target.value = 'Jam Session'; }} />
-          <span className="edit-icon">✎</span>
-        </div>
-
-        <div className="nav-right">
-          <button className="btn" onClick={handleCopyRoomCode}>
-            <span>🔗</span> Invite
-          </button>
-          {userData && !userData.isPremium && (
-            <button className="btn btn-primary" onClick={() => setShowUpgradeModal(true)}>
-              <span>⭐</span> Upgrade
+          <div className="dash-nav-right">
+            <button className="btn btn-sm" onClick={handleCopyCode}>
+              🔗 Invite
             </button>
-          )}
-          {userData?.isPremium && (
-            <div className="btn" style={{ background: "rgba(250,204,21,.08)", borderColor: "rgba(250,204,21,.18)", color: "#facc15", cursor: "default" }}>
-              <span>⭐</span> Premium
+            {userData && !userData.isPremium && (
+              <button className="btn btn-primary btn-sm" onClick={() => setShowUpgradeModal(true)}>
+                ⭐ Upgrade
+              </button>
+            )}
+            {userData?.isPremium && (
+              <span className="badge badge-premium">⭐ Premium</span>
+            )}
+            <button
+              className="btn btn-sm"
+              style={{ color: "#f87171", borderColor: "rgba(248,113,113,0.25)" }}
+              onClick={handleLeaveRoom}
+            >
+              Leave
+            </button>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <UserButton />
             </div>
-          )}
-          <button className="btn btn-danger" onClick={handleLeaveRoom}>
-            Leave
-          </button>
-          <div className="avatar" style={{ background: "transparent" }}>
-            <UserButton />
           </div>
-        </div>
-      </nav>
+        </nav>
 
-      {/* ── APP BODY ── */}
-      <div className="app-body">
-        <div className="main-row">
-
-          {/* ═══ MAIN PLAYER ═══ */}
-          <div className="player-area">
-            <div className="karaoke-toggle">
-              <div className="toggle-dot"></div>
-              <span>Karaoke</span>
+        {/* BODY */}
+        <div className="dash-body">
+          {/* PLAYER COLUMN */}
+          <div className="player-col">
+            <div className="karaoke-pill">
+              <div className="karaoke-dot" />
+              Karaoke
             </div>
-
             <div className="player-card">
               <Player />
               <Controls />
             </div>
           </div>
 
-          {/* ═══ SIDEBAR ═══ */}
+          {/* SIDEBAR */}
           <div className="sidebar">
             <Search />
             <Queue />
             <Users />
           </div>
-
         </div>
 
-        {/* ═══ BOTTOM DOCK ═══ */}
+        {/* CHAT DOCK */}
         <Chat />
       </div>
     </>

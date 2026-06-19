@@ -9,7 +9,6 @@ export const Chat = () => {
   const { messages, chatInput, addMessage, setChatInput } = useChatStore();
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -17,49 +16,58 @@ export const Chat = () => {
   useEffect(() => {
     const handleReceiveMessage = (msg: { user: string; text: string; timestamp: string }) => {
       addMessage(msg);
-      if (msg.text.startsWith("/play ")) {
-        const query = msg.text.replace("/play ", "");
-        console.log(`Command: search for "${query}"`);
-      }
     };
     socket.on("receive_message", handleReceiveMessage);
     return () => { socket.off("receive_message", handleReceiveMessage); };
   }, [addMessage]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() || !currentRoom) return;
     socket.emit("send_message", {
       roomCode: currentRoom,
-      message: { user: user?.firstName || "Anonymous", text: chatInput },
+      message: {
+        user: user?.firstName || "Anonymous",
+        text: chatInput,
+      },
     });
     setChatInput("");
   };
 
   if (!currentRoom) return null;
 
+  const AV_COLORS = ["av-coral", "av-violet", "av-teal", "av-pink"];
+
   return (
-    <div className="bottom-dock">
-      <div className="dock-drag" title="Drag to resize"></div>
+    <div className="chat-dock">
+      <div className="chat-resize-handle" />
 
       <div className="chat-messages">
         {messages.length === 0 ? (
-          <div className="chat-sys">No messages yet. Start chatting!</div>
+          <div className="chat-empty">No messages yet — say hello 👋</div>
         ) : (
           messages.map((msg, idx) => {
             const isMe = msg.user === (user?.firstName || "Anonymous");
+            const avColor = isMe ? "av-coral" : AV_COLORS[idx % AV_COLORS.length];
             return (
               <div key={idx} className="chat-msg">
-                <div className={`chat-avatar ${isMe ? "av-pink" : "av-violet"}`}>
+                <div className={`chat-msg-av avatar ${avColor}`} style={{ fontSize: "0.62rem" }}>
                   {msg.user.substring(0, 2).toUpperCase()}
                 </div>
-                <div className="chat-content">
-                  <div className="chat-meta">
-                    <span className="chat-name" style={{ color: isMe ? "var(--pink)" : "var(--violet)" }}>{msg.user}</span>
-                    <span className="chat-time">{new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                    {isMe && <span style={{ fontSize: 10, background: "var(--pink-dim)", color: "var(--pink)", border: "1px solid rgba(236,72,153,0.2)", padding: "1px 5px", borderRadius: 4 }}>you</span>}
+                <div className="chat-msg-body">
+                  <div className="chat-msg-meta">
+                    <span
+                      className="chat-msg-name"
+                      style={{ color: isMe ? "var(--coral)" : "var(--violet-soft)" }}
+                    >
+                      {msg.user}
+                    </span>
+                    <span className="chat-msg-time">
+                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    {isMe && <span className="chat-msg-you">you</span>}
                   </div>
-                  <div className="chat-text">{msg.text}</div>
+                  <div className="chat-msg-text">{msg.text}</div>
                 </div>
               </div>
             );
@@ -68,17 +76,17 @@ export const Chat = () => {
         <div ref={bottomRef} />
       </div>
 
-      <form className="dock-input-row" onSubmit={handleSendMessage}>
+      <form className="chat-form" onSubmit={handleSend}>
         <input
           className="chat-input"
-          placeholder="Message… or /play <song>"
+          placeholder="Message the room… or /play <song>"
           value={chatInput}
-          onChange={(e) => setChatInput(e.target.value)}
+          onChange={e => setChatInput(e.target.value)}
         />
-        <button type="submit" className="dock-btn send" title="Send">➤</button>
-        <div className="dock-btn active-mic" title="Mute / Unmute">🎤</div>
-        <div className="dock-btn" title="Camera Off">📷</div>
-        <div className="dock-btn" title="Settings">⚙️</div>
+        <button type="submit" className="chat-send-btn" title="Send">➤</button>
+        <div className="chat-dock-btn mic-on" title="Mute / Unmute">🎤</div>
+        <div className="chat-dock-btn" title="Camera">📷</div>
+        <div className="chat-dock-btn" title="Settings">⚙️</div>
       </form>
     </div>
   );
