@@ -20,11 +20,11 @@
 
 | Preview | Description |
 |---|---|
-| <img width="1919" height="857" alt="image" src="https://github.com/user-attachments/assets/22f65873-fdce-473c-9316-867277a35a46" /> | Landing Page |
-| <img width="467" height="325" alt="image" src="https://github.com/user-attachments/assets/cf3b6f90-3cd8-4829-98d6-953959bd6219" /> | Room Lobby |
-| <img width="1919" height="863" alt="image" src="https://github.com/user-attachments/assets/30255605-17e3-473b-90da-5c390a392ade" /> | Active Room — Player + Sidebar |
-| <img width="319" height="518" alt="image" src="https://github.com/user-attachments/assets/633fc0c0-995a-46ea-aa9b-198bfc4cde5f" /> | Queue Management |
-| <img width="251" height="279" alt="image" src="https://github.com/user-attachments/assets/40f26a67-fb52-4762-bd07-030802c78cd1" /> | Upgrade Modal |
+| <img width="1917" height="862" alt="image" src="https://github.com/user-attachments/assets/4e6c9f84-3f84-4212-b415-eeb4a028df71" /> | Landing Page |
+| <img width="1917" height="867" alt="image" src="https://github.com/user-attachments/assets/648f0c79-0e00-467f-8469-d1bd4197f45b" /> | Room Lobby |
+| <img width="1917" height="868" alt="image" src="https://github.com/user-attachments/assets/6453c02d-5ea0-4344-a129-e93141f0a9a4" /> | Active Room — Player + Sidebar |
+| <img width="421" height="678" alt="image" src="https://github.com/user-attachments/assets/7ad79e14-b6e6-402b-9667-ddd19134f21a" /> | Queue Management |
+| <img width="550" height="782" alt="image" src="https://github.com/user-attachments/assets/5ef4d474-096c-4ea4-b9dc-4500fe618b30" /> | Upgrade Modal |
 
 ---
 
@@ -109,7 +109,7 @@ The project deliberately covers a wider stack surface than most tutorials:
 - Real-time sync
 - Persistent storage
 
-Interview conversations go deeper when every layer was designed and debugged personally.
+The project idea for **HeartWave** was provided by GitHub user **[Prajakta-rcpit](https://github.com/Prajakta-rcpit)**.
 
 ---
 
